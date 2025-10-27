@@ -130,7 +130,7 @@ def cmd_complete(args: argparse.Namespace) -> None:
         args: Parsed command-line arguments containing task_id.
     """
     try:
-        operations.update_task_status(args.task_id, Status.COMPLETED)
+        operations.update_task_status(args.task_id, "completed")
         print(f"✓ Task marked as complete: {args.task_id}")
     except TaskNotFoundError as e:
         print(f"Error: Task not found: {args.task_id}")
@@ -146,7 +146,7 @@ def cmd_incomplete(args: argparse.Namespace) -> None:
         args: Parsed command-line arguments containing task_id.
     """
     try:
-        operations.update_task_status(args.task_id, Status.ACTIVE)
+        operations.update_task_status(args.task_id, "active")
         print(f"✓ Task marked as active: {args.task_id}")
     except TaskNotFoundError as e:
         print(f"Error: Task not found: {args.task_id}")

@@ -32,7 +32,7 @@ import json
 import shutil
 from pathlib import Path
 from typing import List, Union
-from src.task_manager.models import Task
+from task_manager.models import Task
 
 
 class StorageError(Exception):
@@ -123,7 +123,8 @@ class TaskStorage:
 
         Reads the JSON file, validates its schema, and deserialises all tasks
         into Task objects. If the file contains invalid JSON or doesn't match
-        the expected schema, a StorageError is raised.
+        the expected schema, a StorageError is raised. If the file is empty,
+        returns an empty list.
 
         Returns:
             List of Task objects loaded from storage (empty list if no tasks)
@@ -133,7 +134,14 @@ class TaskStorage:
         """
         try:
             with open(self.file_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+                content = f.read()
+
+            # Handle empty files gracefully
+            if not content or content.strip() == '':
+                self._write_json({'tasks': []})
+                return []
+
+            data = json.loads(content)
 
             self._validate_schema(data)
 

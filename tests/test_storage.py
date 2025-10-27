@@ -4,8 +4,8 @@ import json
 import pytest
 from pathlib import Path
 from datetime import datetime
-from src.task_manager.models import Task, Priority, Status
-from src.task_manager.storage import TaskStorage, StorageError, TaskNotFoundError
+from task_manager.models import Task, Priority, Status
+from task_manager.storage import TaskStorage, StorageError, TaskNotFoundError
 
 
 # Fixtures for test setup

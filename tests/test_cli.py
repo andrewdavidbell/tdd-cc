@@ -324,7 +324,7 @@ def test_cmd_complete_marks_task_complete(mock_update_status):
     args = Mock(task_id='test-uuid-123')
     cmd_complete(args)
 
-    mock_update_status.assert_called_once_with('test-uuid-123', Status.COMPLETED)
+    mock_update_status.assert_called_once_with('test-uuid-123', "completed")
 
 
 @patch('task_manager.cli.operations.update_task_status')
@@ -357,7 +357,7 @@ def test_cmd_incomplete_marks_task_active(mock_update_status):
     args = Mock(task_id='test-uuid-123')
     cmd_incomplete(args)
 
-    mock_update_status.assert_called_once_with('test-uuid-123', Status.ACTIVE)
+    mock_update_status.assert_called_once_with('test-uuid-123', "active")
 
 
 @patch('task_manager.cli.operations.update_task_status')

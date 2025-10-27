@@ -21,16 +21,19 @@ Example:
     >>> update_task_status(task.id, "completed")
 """
 
+import os
 from pathlib import Path
 from datetime import datetime
 from typing import List, Optional
-from src.task_manager.models import Task, Priority, Status, ValidationError
-from src.task_manager.storage import TaskStorage, TaskNotFoundError, StorageError
+from task_manager.models import Task, Priority, Status, ValidationError
+from task_manager.storage import TaskStorage, TaskNotFoundError, StorageError
 
 
 # Module-level storage instance (singleton pattern)
+# Check for environment variable override
 DEFAULT_STORAGE_PATH = Path.home() / ".task_manager" / "tasks.json"
-storage = TaskStorage(DEFAULT_STORAGE_PATH)
+STORAGE_PATH = os.environ.get('TASK_STORAGE_PATH', str(DEFAULT_STORAGE_PATH))
+storage = TaskStorage(STORAGE_PATH)
 
 # Mapping dictionaries for string to enum conversion
 PRIORITY_MAP = {
@@ -63,24 +66,37 @@ def create_task(
         title: Task title (required, non-empty)
         description: Optional task description
         priority: Priority level (high/medium/low), defaults to medium
-        due_date: Optional due date
+        due_date: Optional due date as datetime object or ISO format string (YYYY-MM-DD)
 
     Returns:
         The created Task object
 
     Raises:
-        ValidationError: If task data is invalid
+        ValidationError: If task data is invalid (invalid date format, etc.)
         StorageError: If storage operation fails
     """
     # Convert priority string to Priority enum
     priority_enum = PRIORITY_MAP.get(priority.lower(), Priority.MEDIUM)
+
+    # Parse due_date string to datetime if provided as string
+    due_date_obj = None
+    if due_date:
+        if isinstance(due_date, str):
+            try:
+                due_date_obj = datetime.fromisoformat(due_date)
+            except (ValueError, TypeError) as e:
+                raise ValidationError(f"Invalid due_date format: {due_date}. Expected YYYY-MM-DD format.")
+        elif isinstance(due_date, datetime):
+            due_date_obj = due_date
+        else:
+            raise ValidationError(f"Invalid due_date type: {type(due_date)}. Expected str or datetime.")
 
     # Create task
     task = Task(
         title=title,
         description=description,
         priority=priority_enum,
-        due_date=due_date
+        due_date=due_date_obj
     )
 
     # Validate task before persisting

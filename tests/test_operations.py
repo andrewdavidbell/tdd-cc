@@ -3,9 +3,9 @@
 import pytest
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
-from src.task_manager.models import Task, Priority, Status, ValidationError
-from src.task_manager.storage import TaskNotFoundError, StorageError
-from src.task_manager import operations
+from task_manager.models import Task, Priority, Status, ValidationError
+from task_manager.storage import TaskNotFoundError, StorageError
+from task_manager import operations
 
 
 # Fixtures for test setup
@@ -73,7 +73,7 @@ def sample_tasks():
 @pytest.fixture(autouse=True)
 def reset_storage():
     """Reset storage before each test to ensure clean state."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_all.return_value = []
         yield mock_storage
 
@@ -82,7 +82,7 @@ def reset_storage():
 
 def test_create_task_with_minimal_fields():
     """Create task with only title."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         task = operations.create_task(title="Buy groceries")
         assert task.title == "Buy groceries"
         assert task.priority == Priority.MEDIUM  # default
@@ -92,7 +92,7 @@ def test_create_task_with_minimal_fields():
 
 def test_create_task_with_all_fields():
     """Create task with all optional fields provided."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         due_date = datetime.now() + timedelta(days=1)
         task = operations.create_task(
             title="Complete project",
@@ -115,14 +115,14 @@ def test_create_task_validates_input():
 
 def test_create_task_persists_to_storage():
     """Created task is saved via storage."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         task = operations.create_task(title="Test Task")
         mock_storage.add.assert_called_once_with(task)
 
 
 def test_create_task_returns_task_object():
     """create_task returns a Task object."""
-    with patch('src.task_manager.operations.storage'):
+    with patch('task_manager.operations.storage'):
         task = operations.create_task(title="Test Task")
         assert isinstance(task, Task)
         assert task.title == "Test Task"
@@ -132,7 +132,7 @@ def test_create_task_returns_task_object():
 
 def test_get_existing_task(sample_task):
     """Retrieve existing task by ID."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_by_id.return_value = sample_task
         task = operations.get_task("test-id-001")
         assert task.id == "test-id-001"
@@ -141,7 +141,7 @@ def test_get_existing_task(sample_task):
 
 def test_get_nonexistent_task_raises_error():
     """Getting non-existent task raises TaskNotFoundError."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_by_id.side_effect = TaskNotFoundError("Task not found")
         with pytest.raises(TaskNotFoundError):
             operations.get_task("nonexistent-id")
@@ -149,7 +149,7 @@ def test_get_nonexistent_task_raises_error():
 
 def test_get_task_returns_correct_task(sample_tasks):
     """get_task returns the correct task when multiple tasks exist."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_by_id.return_value = sample_tasks[2]
         task = operations.get_task("task-003")
         assert task.id == "task-003"
@@ -160,7 +160,7 @@ def test_get_task_returns_correct_task(sample_tasks):
 
 def test_list_all_tasks_empty():
     """List tasks returns empty list when no tasks exist."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_all.return_value = []
         tasks = operations.list_tasks()
         assert tasks == []
@@ -168,7 +168,7 @@ def test_list_all_tasks_empty():
 
 def test_list_all_tasks(sample_tasks):
     """List all tasks without filters returns all tasks."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_all.return_value = sample_tasks
         tasks = operations.list_tasks()
         assert len(tasks) == 5
@@ -176,7 +176,7 @@ def test_list_all_tasks(sample_tasks):
 
 def test_list_tasks_filter_by_active_status(sample_tasks):
     """Filter tasks by active status returns only active tasks."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_all.return_value = sample_tasks
         tasks = operations.list_tasks(status_filter="active")
         assert len(tasks) == 3
@@ -185,7 +185,7 @@ def test_list_tasks_filter_by_active_status(sample_tasks):
 
 def test_list_tasks_filter_by_completed_status(sample_tasks):
     """Filter tasks by completed status returns only completed tasks."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_all.return_value = sample_tasks
         tasks = operations.list_tasks(status_filter="completed")
         assert len(tasks) == 2
@@ -194,7 +194,7 @@ def test_list_tasks_filter_by_completed_status(sample_tasks):
 
 def test_list_tasks_filter_by_high_priority(sample_tasks):
     """Filter tasks by high priority returns only high priority tasks."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_all.return_value = sample_tasks
         tasks = operations.list_tasks(priority_filter="high")
         assert len(tasks) == 2
@@ -203,7 +203,7 @@ def test_list_tasks_filter_by_high_priority(sample_tasks):
 
 def test_list_tasks_filter_by_medium_priority(sample_tasks):
     """Filter tasks by medium priority returns only medium priority tasks."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_all.return_value = sample_tasks
         tasks = operations.list_tasks(priority_filter="medium")
         assert len(tasks) == 2
@@ -212,7 +212,7 @@ def test_list_tasks_filter_by_medium_priority(sample_tasks):
 
 def test_list_tasks_filter_by_low_priority(sample_tasks):
     """Filter tasks by low priority returns only low priority tasks."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_all.return_value = sample_tasks
         tasks = operations.list_tasks(priority_filter="low")
         assert len(tasks) == 1
@@ -221,7 +221,7 @@ def test_list_tasks_filter_by_low_priority(sample_tasks):
 
 def test_list_tasks_combined_filters(sample_tasks):
     """Combined status and priority filters work correctly."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_all.return_value = sample_tasks
         tasks = operations.list_tasks(status_filter="active", priority_filter="high")
         assert len(tasks) == 1
@@ -232,7 +232,7 @@ def test_list_tasks_combined_filters(sample_tasks):
 
 def test_list_tasks_sort_by_created_at_desc(sample_tasks):
     """Default sort by created_at returns newest first."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_all.return_value = sample_tasks
         tasks = operations.list_tasks(sort_by="created_at")
         assert tasks[0].id == "task-001"  # newest
@@ -241,7 +241,7 @@ def test_list_tasks_sort_by_created_at_desc(sample_tasks):
 
 def test_list_tasks_sort_by_due_date_asc(sample_tasks):
     """Sort by due_date returns earliest due date first."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_all.return_value = sample_tasks
         tasks = operations.list_tasks(sort_by="due_date")
         # Tasks with due dates should come first, sorted by date
@@ -255,7 +255,7 @@ def test_list_tasks_sort_by_due_date_asc(sample_tasks):
 
 def test_list_tasks_sort_by_due_date_none_last(sample_tasks):
     """Tasks without due dates appear last when sorting by due_date."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_all.return_value = sample_tasks
         tasks = operations.list_tasks(sort_by="due_date")
         # Last tasks should have no due date
@@ -265,7 +265,7 @@ def test_list_tasks_sort_by_due_date_none_last(sample_tasks):
 
 def test_list_tasks_sort_by_priority(sample_tasks):
     """Sort by priority returns high→medium→low."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_all.return_value = sample_tasks
         tasks = operations.list_tasks(sort_by="priority")
         # Group by priority and verify order
@@ -284,7 +284,7 @@ def test_list_tasks_sort_by_priority(sample_tasks):
 
 def test_list_tasks_filter_and_sort(sample_tasks):
     """Combined filtering and sorting work correctly."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_all.return_value = sample_tasks
         tasks = operations.list_tasks(status_filter="active", sort_by="priority")
         assert len(tasks) == 3
@@ -299,7 +299,7 @@ def test_list_tasks_filter_and_sort(sample_tasks):
 
 def test_mark_task_complete(sample_task):
     """Mark active task as completed."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_by_id.return_value = sample_task
         task = operations.update_task_status("test-id-001", "completed")
         assert task.status == Status.COMPLETED
@@ -307,7 +307,7 @@ def test_mark_task_complete(sample_task):
 
 def test_mark_task_incomplete(sample_tasks):
     """Mark completed task as active."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         completed_task = sample_tasks[1]  # completed task
         mock_storage.get_by_id.return_value = completed_task
         task = operations.update_task_status("task-002", "active")
@@ -316,7 +316,7 @@ def test_mark_task_incomplete(sample_tasks):
 
 def test_mark_complete_sets_timestamp(sample_task):
     """Marking task complete sets completed_at timestamp."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_by_id.return_value = sample_task
         task = operations.update_task_status("test-id-001", "completed")
         assert task.completed_at is not None
@@ -325,7 +325,7 @@ def test_mark_complete_sets_timestamp(sample_task):
 
 def test_mark_incomplete_clears_timestamp(sample_tasks):
     """Marking task incomplete clears completed_at timestamp."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         completed_task = sample_tasks[1]
         mock_storage.get_by_id.return_value = completed_task
         task = operations.update_task_status("task-002", "active")
@@ -334,7 +334,7 @@ def test_mark_incomplete_clears_timestamp(sample_tasks):
 
 def test_update_status_persists_to_storage(sample_task):
     """Status change is persisted to storage."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_by_id.return_value = sample_task
         operations.update_task_status("test-id-001", "completed")
         mock_storage.update.assert_called_once()
@@ -342,7 +342,7 @@ def test_update_status_persists_to_storage(sample_task):
 
 def test_update_nonexistent_task_raises_error():
     """Updating non-existent task raises TaskNotFoundError."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_by_id.side_effect = TaskNotFoundError("Task not found")
         with pytest.raises(TaskNotFoundError):
             operations.update_task_status("nonexistent-id", "completed")
@@ -350,7 +350,7 @@ def test_update_nonexistent_task_raises_error():
 
 def test_mark_already_completed_task_complete(sample_tasks):
     """Marking already completed task as complete is idempotent."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         completed_task = sample_tasks[1]
         original_completed_at = completed_task.completed_at
         mock_storage.get_by_id.return_value = completed_task
@@ -363,14 +363,14 @@ def test_mark_already_completed_task_complete(sample_tasks):
 
 def test_delete_existing_task():
     """Delete existing task successfully."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         operations.delete_task("test-id-001")
         mock_storage.remove.assert_called_once_with("test-id-001")
 
 
 def test_delete_nonexistent_task_raises_error():
     """Deleting non-existent task raises TaskNotFoundError."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.remove.side_effect = TaskNotFoundError("Task not found")
         with pytest.raises(TaskNotFoundError):
             operations.delete_task("nonexistent-id")
@@ -378,7 +378,7 @@ def test_delete_nonexistent_task_raises_error():
 
 def test_delete_persists_to_storage():
     """Task deletion is persisted to storage."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         operations.delete_task("test-id-001")
         # Verify storage.remove was called
         assert mock_storage.remove.called
@@ -386,7 +386,7 @@ def test_delete_persists_to_storage():
 
 def test_delete_removes_correct_task(sample_tasks):
     """Deletion removes only the specified task."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         operations.delete_task("task-003")
         mock_storage.remove.assert_called_with("task-003")
 
@@ -395,7 +395,7 @@ def test_delete_removes_correct_task(sample_tasks):
 
 def test_clear_completed_tasks_removes_all_completed(sample_tasks):
     """Clear completed tasks removes all completed tasks."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_all.return_value = sample_tasks
         count = operations.clear_completed_tasks()
         # Should remove 2 completed tasks
@@ -406,7 +406,7 @@ def test_clear_completed_tasks_removes_all_completed(sample_tasks):
 
 def test_clear_completed_tasks_preserves_active(sample_tasks):
     """Clear completed tasks preserves active tasks."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_all.return_value = sample_tasks
         operations.clear_completed_tasks()
         # Verify remove was only called for completed tasks
@@ -428,7 +428,7 @@ def test_clear_completed_tasks_empty_list():
             created_at=datetime.now()
         )
     ]
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_all.return_value = active_only
         count = operations.clear_completed_tasks()
         assert count == 0
@@ -437,7 +437,7 @@ def test_clear_completed_tasks_empty_list():
 
 def test_clear_completed_tasks_persists_to_storage(sample_tasks):
     """Clear completed tasks persists changes to storage."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_all.return_value = sample_tasks
         operations.clear_completed_tasks()
         # Verify storage.remove was called
@@ -446,7 +446,7 @@ def test_clear_completed_tasks_persists_to_storage(sample_tasks):
 
 def test_clear_completed_returns_count(sample_tasks):
     """clear_completed_tasks returns number of tasks removed."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_all.return_value = sample_tasks
         count = operations.clear_completed_tasks()
         assert isinstance(count, int)
@@ -457,7 +457,7 @@ def test_clear_completed_returns_count(sample_tasks):
 
 def test_operations_with_storage_error():
     """Operations handle storage errors gracefully."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.add.side_effect = StorageError("Disk full")
         with pytest.raises(StorageError):
             operations.create_task(title="Test Task")
@@ -465,7 +465,7 @@ def test_operations_with_storage_error():
 
 def test_concurrent_operations_safe(sample_tasks):
     """Multiple operations don't corrupt data (basic safety check)."""
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_all.return_value = sample_tasks
         # Perform multiple operations
         tasks1 = operations.list_tasks(status_filter="active")
@@ -487,7 +487,7 @@ def test_list_tasks_large_dataset():
         )
         for i in range(1000)
     ]
-    with patch('src.task_manager.operations.storage') as mock_storage:
+    with patch('task_manager.operations.storage') as mock_storage:
         mock_storage.get_all.return_value = large_dataset
         tasks = operations.list_tasks()
         assert len(tasks) == 1000

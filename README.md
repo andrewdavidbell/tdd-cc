@@ -317,6 +317,10 @@ task_cli list --status completed
 task_cli clear
 ```
 
+## Acknowledgment
+
+Thank you to Andrew Cranston for sharing his AI assisted Test-Driven Development methodology, [TD-AID](https://andrewjcode.substack.com/p/ai-is-writing-terrible-code).
+
 ## Contributing
 
 This project follows TD-AID principles. When contributing:
